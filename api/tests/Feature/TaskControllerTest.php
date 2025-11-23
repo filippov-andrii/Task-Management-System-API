@@ -14,7 +14,7 @@ class TaskControllerTest extends TestCase
     {
         $tasks = Task::factory()->count(5)->create();
 
-        $response = $this->getJson(route('tasks.index'));
+        $response = $this->getJson(route('v1.tasks.index'));
 
         $response->assertStatus(200);
         $response->assertJsonCount(5, 'data');
@@ -34,7 +34,7 @@ class TaskControllerTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $response = $this->getJson(route('tasks.show', $task->id));
+        $response = $this->getJson(route('v1.tasks.show', $task->id));
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -61,7 +61,7 @@ class TaskControllerTest extends TestCase
             'status' => 'open',
         ];
 
-        $response = $this->postJson(route('tasks.store'), $data);
+        $response = $this->postJson(route('v1.tasks.store'), $data);
 
         $response->assertStatus(201);
         $response->assertJsonStructure([
@@ -94,7 +94,7 @@ class TaskControllerTest extends TestCase
             'status' => 'in_progress',
         ];
 
-        $response = $this->putJson(route('tasks.update', $task->id), $data);
+        $response = $this->putJson(route('v1.tasks.update', $task->id), $data);
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -114,7 +114,7 @@ class TaskControllerTest extends TestCase
     public function test_destroy_deletes_task()
     {
         $task = Task::factory()->create();
-        $response = $this->deleteJson(route('tasks.destroy', $task->id));
+        $response = $this->deleteJson(route('v1.tasks.destroy', $task->id));
         $response->assertStatus(204);
         $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
     }
@@ -123,7 +123,7 @@ class TaskControllerTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $response = $this->putJson(route('tasks.update', $task->id), [
+        $response = $this->putJson(route('v1.tasks.update', $task->id), [
             'title' => 'Updated Task Title',
             'description' => 'Updated description',
             'status' => 'invalid_status',
@@ -137,7 +137,7 @@ class TaskControllerTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $response = $this->putJson(route('tasks.update', $task->id), [
+        $response = $this->putJson(route('v1.tasks.update', $task->id), [
             'title' => str_repeat('a', 256),
             'description' => 'Updated description',
             'status' => 'in_progress',
@@ -155,7 +155,7 @@ class TaskControllerTest extends TestCase
             'description' => '',
             'status' => 'open',
         ];
-        $response = $this->putJson(route('tasks.update', $task->id), $data);
+        $response = $this->putJson(route('v1.tasks.update', $task->id), $data);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('tasks', [
@@ -167,7 +167,7 @@ class TaskControllerTest extends TestCase
 
     public function test_store_requires_title()
     {
-        $response = $this->postJson(route('tasks.store'), [
+        $response = $this->postJson(route('v1.tasks.store'), [
             'description' => 'Task description',
             'status' => 'open',
         ]);
@@ -178,7 +178,7 @@ class TaskControllerTest extends TestCase
 
     public function test_store_requires_valid_status()
     {
-        $response = $this->postJson(route('tasks.store'), [
+        $response = $this->postJson(route('v1.tasks.store'), [
             'title' => 'Test Task',
             'description' => 'Task description',
             'status' => 'invalid_status',
@@ -190,7 +190,7 @@ class TaskControllerTest extends TestCase
 
     public function test_store_title_max_length()
     {
-        $response = $this->postJson(route('tasks.store'), [
+        $response = $this->postJson(route('v1.tasks.store'), [
             'title' => str_repeat('a', 256),
             'description' => 'Task description',
             'status' => 'open',
@@ -207,7 +207,7 @@ class TaskControllerTest extends TestCase
             'description' => '',
             'status' => 'open',
         ];
-        $response = $this->postJson(route('tasks.store'), $data);
+        $response = $this->postJson(route('v1.tasks.store'), $data);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('tasks', [
@@ -218,7 +218,7 @@ class TaskControllerTest extends TestCase
 
     public function test_store_requires_status()
     {
-        $response = $this->postJson(route('tasks.store'), [
+        $response = $this->postJson(route('v1.tasks.store'), [
             'title' => 'Test Task',
             'description' => 'Task description',
         ]);
