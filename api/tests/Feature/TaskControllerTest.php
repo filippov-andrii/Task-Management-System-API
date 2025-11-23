@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -10,11 +11,19 @@ class TaskControllerTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->user = User::factory()->create();
+    }
+
     public function test_index_returns_tasks()
     {
         $tasks = Task::factory()->count(5)->create();
 
-        $response = $this->getJson(route('v1.tasks.index'));
+        $response = $this->actingAs($this->user, 'sanctum')->getJson(route('v1.tasks.index'));
 
         $response->assertStatus(200);
         $response->assertJsonCount(5, 'data');
@@ -34,7 +43,7 @@ class TaskControllerTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $response = $this->getJson(route('v1.tasks.show', $task->id));
+        $response = $this->actingAs($this->user, 'sanctum')->getJson(route('v1.tasks.show', $task->id));
 
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -61,7 +70,7 @@ class TaskControllerTest extends TestCase
             'status' => 'open',
         ];
 
-        $response = $this->postJson(route('v1.tasks.store'), $data);
+        $response = $this->actingAs($this->user, 'sanctum')->postJson(route('v1.tasks.store'), $data);
 
         $response->assertStatus(201);
         $response->assertJsonStructure([
@@ -94,7 +103,7 @@ class TaskControllerTest extends TestCase
             'status' => 'in_progress',
         ];
 
-        $response = $this->putJson(route('v1.tasks.update', $task->id), $data);
+        $response = $this->actingAs($this->user, 'sanctum')->putJson(route('v1.tasks.update', $task->id), $data);
 
         $response->assertStatus(200);
         $response->assertJson([
@@ -114,7 +123,7 @@ class TaskControllerTest extends TestCase
     public function test_destroy_deletes_task()
     {
         $task = Task::factory()->create();
-        $response = $this->deleteJson(route('v1.tasks.destroy', $task->id));
+        $response = $this->actingAs($this->user, 'sanctum')->deleteJson(route('v1.tasks.destroy', $task->id));
         $response->assertStatus(204);
         $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
     }
@@ -123,7 +132,7 @@ class TaskControllerTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $response = $this->putJson(route('v1.tasks.update', $task->id), [
+        $response = $this->actingAs($this->user, 'sanctum')->putJson(route('v1.tasks.update', $task->id), [
             'title' => 'Updated Task Title',
             'description' => 'Updated description',
             'status' => 'invalid_status',
@@ -137,7 +146,7 @@ class TaskControllerTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $response = $this->putJson(route('v1.tasks.update', $task->id), [
+        $response = $this->actingAs($this->user, 'sanctum')->putJson(route('v1.tasks.update', $task->id), [
             'title' => str_repeat('a', 256),
             'description' => 'Updated description',
             'status' => 'in_progress',
@@ -155,7 +164,7 @@ class TaskControllerTest extends TestCase
             'description' => '',
             'status' => 'open',
         ];
-        $response = $this->putJson(route('v1.tasks.update', $task->id), $data);
+        $response = $this->actingAs($this->user, 'sanctum')->putJson(route('v1.tasks.update', $task->id), $data);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('tasks', [
@@ -167,7 +176,7 @@ class TaskControllerTest extends TestCase
 
     public function test_store_requires_title()
     {
-        $response = $this->postJson(route('v1.tasks.store'), [
+        $response = $this->actingAs($this->user, 'sanctum')->postJson(route('v1.tasks.store'), [
             'description' => 'Task description',
             'status' => 'open',
         ]);
@@ -178,7 +187,7 @@ class TaskControllerTest extends TestCase
 
     public function test_store_requires_valid_status()
     {
-        $response = $this->postJson(route('v1.tasks.store'), [
+        $response = $this->actingAs($this->user, 'sanctum')->postJson(route('v1.tasks.store'), [
             'title' => 'Test Task',
             'description' => 'Task description',
             'status' => 'invalid_status',
@@ -190,7 +199,7 @@ class TaskControllerTest extends TestCase
 
     public function test_store_title_max_length()
     {
-        $response = $this->postJson(route('v1.tasks.store'), [
+        $response = $this->actingAs($this->user, 'sanctum')->postJson(route('v1.tasks.store'), [
             'title' => str_repeat('a', 256),
             'description' => 'Task description',
             'status' => 'open',
@@ -207,7 +216,7 @@ class TaskControllerTest extends TestCase
             'description' => '',
             'status' => 'open',
         ];
-        $response = $this->postJson(route('v1.tasks.store'), $data);
+        $response = $this->actingAs($this->user, 'sanctum')->postJson(route('v1.tasks.store'), $data);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('tasks', [
@@ -218,12 +227,76 @@ class TaskControllerTest extends TestCase
 
     public function test_store_requires_status()
     {
-        $response = $this->postJson(route('v1.tasks.store'), [
+        $response = $this->actingAs($this->user, 'sanctum')->postJson(route('v1.tasks.store'), [
             'title' => 'Test Task',
             'description' => 'Task description',
         ]);
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors('status');
+    }
+
+    public function test_index_requires_authentication()
+    {
+        $response = $this->getJson(route('v1.tasks.index'));
+
+        $response->assertStatus(401);
+        $response->assertJson([
+            'message' => 'Unauthenticated.',
+        ]);
+    }
+
+    public function test_show_requires_authentication()
+    {
+        $task = Task::factory()->create();
+
+        $response = $this->getJson(route('v1.tasks.show', $task->id));
+
+        $response->assertStatus(401);
+        $response->assertJson([
+            'message' => 'Unauthenticated.',
+        ]);
+    }
+
+    public function test_store_requires_authentication()
+    {
+        $response = $this->postJson(route('v1.tasks.store'), [
+            'title' => 'New Task',
+            'description' => 'Task description',
+            'status' => 'open',
+        ]);
+
+        $response->assertStatus(401);
+        $response->assertJson([
+            'message' => 'Unauthenticated.',
+        ]);
+    }
+
+    public function test_update_requires_authentication()
+    {
+        $task = Task::factory()->create();
+
+        $response = $this->putJson(route('v1.tasks.update', $task->id), [
+            'title' => 'Updated Task',
+            'description' => 'Updated description',
+            'status' => 'in_progress',
+        ]);
+
+        $response->assertStatus(401);
+        $response->assertJson([
+            'message' => 'Unauthenticated.',
+        ]);
+    }
+
+    public function test_destroy_requires_authentication()
+    {
+        $task = Task::factory()->create();
+
+        $response = $this->deleteJson(route('v1.tasks.destroy', $task->id));
+
+        $response->assertStatus(401);
+        $response->assertJson([
+            'message' => 'Unauthenticated.',
+        ]);
     }
 }
