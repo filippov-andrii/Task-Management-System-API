@@ -177,6 +177,111 @@
           }
         }
       ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Get all projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "http://localhost/api/v1/projects",
+              "protocol": "http",
+              "host": ["localhost"],
+              "path": ["api", "v1", "projects"]
+            }
+          }
+        },
+        {
+          "name": "Get single project",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "http://localhost/api/v1/projects/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "path": ["api", "v1", "projects", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create new project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My first project\",\n  \"description\": \"Test project description\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost/api/v1/projects",
+              "protocol": "http",
+              "host": ["localhost"],
+              "path": ["api", "v1", "projects"]
+            }
+          }
+        },
+        {
+          "name": "Update project",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated project name\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost/api/v1/projects/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "path": ["api", "v1", "projects", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete project",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "http://localhost/api/v1/projects/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "path": ["api", "v1", "projects", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get tasks for project",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "http://localhost/api/v1/projects/1/tasks",
+              "protocol": "http",
+              "host": ["localhost"],
+              "path": ["api", "v1", "projects", "1", "tasks"]
+            }
+          }
+        }
+      ]
     }
   ],
   "auth": {
