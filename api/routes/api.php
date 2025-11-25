@@ -4,6 +4,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\EnsureTaskBelongsToUser;
 
 Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
@@ -20,7 +21,7 @@ Route::prefix('v1')->group(function () {
             'store' => 'v1.tasks.store',
             'update' => 'v1.tasks.update',
             'destroy' => 'v1.tasks.destroy',
-        ]);
+        ])->middleware(EnsureTaskBelongsToUser::class);
 
         Route::apiResource('projects', ProjectController::class)->names([
             'index' => 'v1.projects.index',

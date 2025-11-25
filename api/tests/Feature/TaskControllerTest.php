@@ -22,7 +22,7 @@ class TaskControllerTest extends TestCase
 
     public function test_index_returns_tasks()
     {
-        $tasks = Task::factory()->count(5)->create();
+        $tasks = Task::factory()->count(5)->for($this->user, 'user')->create();
 
         $response = $this->actingAs($this->user, 'sanctum')->getJson(route('v1.tasks.index'));
 
@@ -42,7 +42,7 @@ class TaskControllerTest extends TestCase
 
     public function test_show_returns_task()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
 
         $response = $this->actingAs($this->user, 'sanctum')->getJson(route('v1.tasks.show', $task->id));
 
@@ -97,7 +97,7 @@ class TaskControllerTest extends TestCase
 
     public function test_update_updates_task()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
 
         $data = [
             'title' => 'Updated Task',
@@ -124,7 +124,7 @@ class TaskControllerTest extends TestCase
 
     public function test_destroy_deletes_task()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
         $response = $this->actingAs($this->user, 'sanctum')->deleteJson(route('v1.tasks.destroy', $task->id));
         $response->assertStatus(204);
         $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
@@ -132,7 +132,7 @@ class TaskControllerTest extends TestCase
 
     public function test_update_requires_valid_status()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
 
         $response = $this->actingAs($this->user, 'sanctum')->putJson(route('v1.tasks.update', $task->id), [
             'title' => 'Updated Task Title',
@@ -146,7 +146,7 @@ class TaskControllerTest extends TestCase
 
     public function test_update_title_max_length()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
 
         $response = $this->actingAs($this->user, 'sanctum')->putJson(route('v1.tasks.update', $task->id), [
             'title' => str_repeat('a', 256),
@@ -160,7 +160,7 @@ class TaskControllerTest extends TestCase
 
     public function test_update_description_is_nullable()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
         $data = [
             'title' => 'Updated Task Title',
             'description' => '',
@@ -251,7 +251,7 @@ class TaskControllerTest extends TestCase
 
     public function test_show_requires_authentication()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
 
         $response = $this->getJson(route('v1.tasks.show', $task->id));
 
@@ -277,7 +277,7 @@ class TaskControllerTest extends TestCase
 
     public function test_update_requires_authentication()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
 
         $response = $this->putJson(route('v1.tasks.update', $task->id), [
             'title' => 'Updated Task',
@@ -293,7 +293,7 @@ class TaskControllerTest extends TestCase
 
     public function test_destroy_requires_authentication()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
 
         $response = $this->deleteJson(route('v1.tasks.destroy', $task->id));
 
@@ -415,7 +415,7 @@ class TaskControllerTest extends TestCase
 
     public function test_update_fails_with_invalid_deadline()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->putJson(route('v1.tasks.update', $task->id), [
@@ -428,7 +428,7 @@ class TaskControllerTest extends TestCase
 
     public function test_update_fails_with_invalid_project_id()
     {
-        $task = Task::factory()->create();
+        $task = Task::factory()->for($this->user, 'user')->create();
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->putJson(route('v1.tasks.update', $task->id), [
@@ -441,15 +441,14 @@ class TaskControllerTest extends TestCase
 
     public function test_tasks_by_user_returns_only_user_tasks()
     {
-        $user = User::factory()->create();
         $otherUser = User::factory()->create();
 
-        $userTasks = Task::factory()->count(3)->create(['user_id' => $user->id]);
+        $userTasks = Task::factory()->count(3)->create(['user_id' => $this->user->id]);
         //other tasks
         Task::factory()->count(2)->create(['user_id' => $otherUser->id]);
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson(route('v1.tasks.byUser', $user->id));
+            ->getJson(route('v1.tasks.byUser', $this->user->id));
 
         $response->assertStatus(200);
         $response->assertJsonCount(3, 'data');
@@ -464,9 +463,9 @@ class TaskControllerTest extends TestCase
         $project = Project::factory()->create();
         $otherProject = Project::factory()->create();
 
-        $projectTasks = Task::factory()->count(4)->create(['project_id' => $project->id]);
+        $projectTasks = Task::factory()->count(4)->for($this->user, 'user')->create(['project_id' => $project->id]);
         //other tasks
-        Task::factory()->count(2)->create(['project_id' => $otherProject->id]);
+        Task::factory()->count(2)->for($this->user, 'user')->create(['project_id' => $otherProject->id]);
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->getJson(route('v1.tasks.byProject', $project->id));
@@ -481,11 +480,11 @@ class TaskControllerTest extends TestCase
 
     public function test_overdue_tasks_returns_only_tasks_with_past_deadline()
     {
-        $pastTasks = Task::factory()->count(3)->create([
+        $pastTasks = Task::factory()->for($this->user, 'user')->count(3)->create([
             'deadline' => now()->subDays(2),
         ]);
         //future tasks
-        Task::factory()->count(2)->create([
+        Task::factory()->count(2)->for($this->user, 'user')->create([
             'deadline' => now()->addDays(2),
         ]);
 
@@ -498,5 +497,117 @@ class TaskControllerTest extends TestCase
         $returnedIds = collect($response->json('data'))->pluck('id')->sort()->values()->toArray();
         $expectedIds = $pastTasks->pluck('id')->sort()->values()->toArray();
         $this->assertEquals($expectedIds, $returnedIds);
+    }
+
+    public function test_user_cannot_view_other_users_tasks_in_index()
+    {
+        $otherUser = User::factory()->create();
+        Task::factory()->count(3)->create(['user_id' => $otherUser->id]);
+
+        $response = $this->actingAs($this->user, 'sanctum')->getJson(route('v1.tasks.index'));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(0, 'data');
+    }
+
+    public function test_user_cannot_view_other_users_tasks_in_show()
+    {
+        $otherUser = User::factory()->create();
+        $task = Task::factory()->create(['user_id' => $otherUser->id]);
+
+        $response = $this->actingAs($this->user, 'sanctum')->getJson(route('v1.tasks.show', $task->id));
+
+        $response->assertStatus(403);
+        $response->assertJson([
+            'message' => 'Forbidden. You do not own this task.'
+        ]);
+    }
+
+    public function test_user_cannot_update_task_of_another_user()
+    {
+        $otherUser = User::factory()->create();
+        $task = Task::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->putJson(route('v1.tasks.update', $task->id), [
+                'title' => 'Hacked Title'
+            ]);
+
+        $response->assertStatus(403);
+        $response->assertJson([
+            'message' => 'Forbidden. You do not own this task.'
+        ]);
+    }
+
+    public function test_user_cannot_delete_task_of_another_user()
+    {
+        $otherUser = User::factory()->create();
+        $task = Task::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->deleteJson(route('v1.tasks.destroy', $task->id));
+
+        $response->assertStatus(403);
+        $response->assertJson([
+            'message' => 'Forbidden. You do not own this task.'
+        ]);
+    }
+
+    public function test_user_cannot_view_other_users_tasks_in_by_user_endpoint()
+    {
+        $otherUser = User::factory()->create();
+        Task::factory()->create([
+            'user_id' => $otherUser->id,
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->getJson(route('v1.tasks.byUser', $otherUser->id));
+
+        $response->assertStatus(403);
+        $response->assertJson([
+            'message' => 'Forbidden.'
+        ]);
+    }
+
+    public function test_user_cannot_view_other_users_tasks_in_by_project_endpoint()
+    {
+        $project = Project::factory()->create();
+        $otherUser = User::factory()->create();
+
+        $task1 = Task::factory()->create(['user_id' => $this->user->id, 'project_id' => $project->id]);
+        $task2 = Task::factory()->create(['user_id' => $otherUser->id, 'project_id' => $project->id]);
+
+        $response = $this->actingAs($this->user, 'sanctum')->getJson(route('v1.tasks.byProject', $project->id));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonFragment(['id' => $task1->id]);
+        $response->assertJsonMissing(['id' => $task2->id]);
+    }
+
+    public function test_user_cannot_view_other_users_tasks_in_by_overdue_endpoint()
+    {
+        $otherUser = User::factory()->create();
+
+        $task1 = Task::factory()->create([
+            'user_id' => $this->user->id,
+            'deadline' => now()->subDay(),
+        ]);
+
+        $task2 = Task::factory()->create([
+            'user_id' => $otherUser->id,
+            'deadline' => now()->subDay(),
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')->getJson(route('v1.tasks.overdue'));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertJsonFragment(['id' => $task1->id]);
+        $response->assertJsonMissing(['id' => $task2->id]);
     }
 }

@@ -14,7 +14,8 @@ class TaskController extends Controller
      */
     public function index()
     {
-        return TaskResource::collection(Task::all());
+        $tasks = Task::where('user_id', auth()->id())->get();
+        return TaskResource::collection($tasks);
     }
 
     /**
@@ -58,10 +59,15 @@ class TaskController extends Controller
      * Get all tasks assigned to a specific user.
      *
      * @param int $userId
-     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection|\Illuminate\Http\JsonResponse
      */
     public function tasksByUser(int $userId)
     {
+        if ($userId !== auth()->id()) {
+            return response()->json([
+                'message' => 'Forbidden.'
+            ], 403);
+        }
         $tasks = Task::where('user_id', $userId)->get();
         return TaskResource::collection($tasks);
     }
@@ -74,7 +80,9 @@ class TaskController extends Controller
      */
     public function tasksByProject(int $projectId)
     {
-        $tasks = Task::where('project_id', $projectId)->get();
+        $tasks = Task::where('project_id', $projectId)
+            ->where('user_id', auth()->id())
+            ->get();
         return TaskResource::collection($tasks);
     }
 
@@ -85,7 +93,9 @@ class TaskController extends Controller
      */
     public function overdueTasks()
     {
-        $tasks = Task::where('deadline', '<', now())->get();
+        $tasks = Task::where('deadline', '<', now())
+            ->where('user_id', auth()->id())
+            ->get();
         return TaskResource::collection($tasks);
     }
 }
