@@ -2,11 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class EnsureTaskBelongsToUser
+class CheckAdminTaskWriteAccess
 {
     /**
      * Handle an incoming request.
@@ -15,7 +16,15 @@ class EnsureTaskBelongsToUser
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $user = $request->user();
         $task = $request->route('task');
+
+        if ($user->role !== User::ROLE_ADMIN) {
+            return $next($request);
+        }
+        if ($task && $task->deadline && $task->deadline->isPast()) {
+            return $next($request);
+        }
         if ($task && $task->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Forbidden. You do not own this task.'], 403);
         }

@@ -610,4 +610,50 @@ class TaskControllerTest extends TestCase
         $response->assertJsonFragment(['id' => $task1->id]);
         $response->assertJsonMissing(['id' => $task2->id]);
     }
+
+    public function test_user_cannot_update_overdue_task()
+    {
+        $task = Task::factory()->create([
+            'user_id' => $this->user->id,
+            'deadline' => now()->subDays(2),
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->putJson(route('v1.tasks.update', $task->id), ['status' => 'done']);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_can_update_overdue_task_of_another_user()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $otherUser = User::factory()->create();
+
+        $task = Task::factory()->create([
+            'user_id' => $otherUser->id,
+            'deadline' => now()->subDays(2), // просроченная
+        ]);
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->putJson(route('v1.tasks.update', $task->id), ['status' => 'done']);
+
+        $response->assertStatus(200);
+        $this->assertEquals('done', $task->refresh()->status);
+    }
+
+    public function test_admin_cannot_update_not_overdue_task_of_another_user()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $otherUser = User::factory()->create();
+
+        $task = Task::factory()->create([
+            'user_id' => $otherUser->id,
+            'deadline' => now()->addDays(2), // просроченная
+        ]);
+
+        $response = $this->actingAs($admin, 'sanctum')
+            ->putJson(route('v1.tasks.update', $task->id), ['status' => 'done']);
+
+        $response->assertStatus(403);
+    }
 }

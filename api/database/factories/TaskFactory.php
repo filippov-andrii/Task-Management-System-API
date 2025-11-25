@@ -17,7 +17,7 @@ class TaskFactory extends Factory
             'title' => fake()->sentence,
             'description' => fake()->paragraph,
             'status' => fake()->randomElement(['open', 'in_progress', 'done']),
-            'deadline' => fake()->optional()->dateTime,
+            'deadline' => fake()->optional()->dateTimeBetween('+1 day', '+1 year'),
             'user_id' => User::factory(),
             'project_id' => Project::factory(),
         ];

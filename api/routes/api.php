@@ -3,8 +3,10 @@
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AuthController;
+use App\Http\Middleware\CheckAdminTaskWriteAccess;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\EnsureTaskBelongsToUser;
+use App\Http\Middleware\CheckTaskReadAccess;
+use App\Http\Middleware\CheckUserTaskWriteAccess;
 
 Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
@@ -15,13 +17,19 @@ Route::prefix('v1')->group(function () {
         Route::get('tasks/overdue', [TaskController::class, 'overdueTasks'])
             ->name('v1.tasks.overdue');
 
-        Route::apiResource('tasks', TaskController::class)->names([
-            'index' => 'v1.tasks.index',
-            'show' => 'v1.tasks.show',
-            'store' => 'v1.tasks.store',
-            'update' => 'v1.tasks.update',
-            'destroy' => 'v1.tasks.destroy',
-        ])->middleware(EnsureTaskBelongsToUser::class);
+        Route::apiResource('tasks', TaskController::class)
+            ->except(['update'])
+            ->names([
+                'index' => 'v1.tasks.index',
+                'show' => 'v1.tasks.show',
+                'store' => 'v1.tasks.store',
+                'destroy' => 'v1.tasks.destroy',
+            ])->middleware(CheckTaskReadAccess::class);
+
+        Route::put('tasks/{task}', [TaskController::class, 'update'])
+            ->middleware(CheckAdminTaskWriteAccess::class)
+            ->middleware(CheckUserTaskWriteAccess::class)
+            ->name('v1.tasks.update');
 
         Route::apiResource('projects', ProjectController::class)->names([
             'index' => 'v1.projects.index',
