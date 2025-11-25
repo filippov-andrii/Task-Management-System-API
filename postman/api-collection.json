@@ -128,7 +128,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"My first task\",\n  \"description\": \"Test description\",\n  \"status\": \"open\"\n}"
+              "raw": "{\n  \"title\": \"My first task\",\n  \"description\": \"Test description\",\n  \"status\": \"open\",\n  \"deadline\": \"2025-11-23 18:49:56\",\n  \"user_id\": 1,\n  \"project_id\": 1\n}"
             },
             "url": {
               "raw": "http://localhost/api/v1/tasks",
@@ -149,7 +149,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"in_progress\"\n}"
+              "raw": "{\n  \"title\": \"Updated title\",\n  \"status\": \"in_progress\",\n  \"deadline\": \"2025-11-25 12:00:00\",\n  \"user_id\": 1,\n  \"project_id\": 2\n}"
             },
             "url": {
               "raw": "http://localhost/api/v1/tasks/1",
