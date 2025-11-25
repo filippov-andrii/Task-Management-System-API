@@ -7,6 +7,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('tasks/by-user/{userId}', [TaskController::class, 'tasksByUser'])
+            ->name('v1.tasks.byUser');
+        Route::get('tasks/by-project/{projectId}', [TaskController::class, 'tasksByProject'])
+            ->name('v1.tasks.byProject');
+        Route::get('tasks/overdue', [TaskController::class, 'overdueTasks'])
+            ->name('v1.tasks.overdue');
+
         Route::apiResource('tasks', TaskController::class)->names([
             'index' => 'v1.tasks.index',
             'show' => 'v1.tasks.show',

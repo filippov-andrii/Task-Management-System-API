@@ -24,8 +24,8 @@ class TaskController extends Controller
     {
         $task = Task::create($request->validated());
         return (new TaskResource($task))
-        ->response()
-        ->setStatusCode(201);
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -52,5 +52,40 @@ class TaskController extends Controller
     {
         $task->delete();
         return response()->noContent();
+    }
+
+    /**
+     * Get all tasks assigned to a specific user.
+     *
+     * @param int $userId
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function tasksByUser(int $userId)
+    {
+        $tasks = Task::where('user_id', $userId)->get();
+        return TaskResource::collection($tasks);
+    }
+
+    /**
+     * Get all tasks associated with a specific project.
+     *
+     * @param int $projectId
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function tasksByProject(int $projectId)
+    {
+        $tasks = Task::where('project_id', $projectId)->get();
+        return TaskResource::collection($tasks);
+    }
+
+    /**
+     * Get all tasks that are overdue (deadline in the past).
+     *
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
+     */
+    public function overdueTasks()
+    {
+        $tasks = Task::where('deadline', '<', now())->get();
+        return TaskResource::collection($tasks);
     }
 }

@@ -179,6 +179,59 @@
       ]
     },
     {
+      "name": "Tasks Extra",
+      "item": [
+        {
+          "name": "Get tasks by user",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "http://localhost/api/v1/tasks/by-user/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "path": ["api", "v1", "tasks", "by-user", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get tasks by project",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "http://localhost/api/v1/tasks/by-project/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "path": ["api", "v1", "tasks", "by-project", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get overdue tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "http://localhost/api/v1/tasks/overdue",
+              "protocol": "http",
+              "host": ["localhost"],
+              "path": ["api", "v1", "tasks", "overdue"]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Projects",
       "item": [
         {

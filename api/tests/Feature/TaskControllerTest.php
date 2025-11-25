@@ -438,4 +438,65 @@ class TaskControllerTest extends TestCase
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['project_id']);
     }
+
+    public function test_tasks_by_user_returns_only_user_tasks()
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        $userTasks = Task::factory()->count(3)->create(['user_id' => $user->id]);
+        //other tasks
+        Task::factory()->count(2)->create(['user_id' => $otherUser->id]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->getJson(route('v1.tasks.byUser', $user->id));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(3, 'data');
+
+        $returnedIds = collect($response->json('data'))->pluck('id')->sort()->values()->toArray();
+        $expectedIds = $userTasks->pluck('id')->sort()->values()->toArray();
+        $this->assertEquals($expectedIds, $returnedIds);
+    }
+
+    public function test_tasks_by_project_returns_only_project_tasks()
+    {
+        $project = Project::factory()->create();
+        $otherProject = Project::factory()->create();
+
+        $projectTasks = Task::factory()->count(4)->create(['project_id' => $project->id]);
+        //other tasks
+        Task::factory()->count(2)->create(['project_id' => $otherProject->id]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->getJson(route('v1.tasks.byProject', $project->id));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(4, 'data');
+
+        $returnedIds = collect($response->json('data'))->pluck('id')->sort()->values()->toArray();
+        $expectedIds = $projectTasks->pluck('id')->sort()->values()->toArray();
+        $this->assertEquals($expectedIds, $returnedIds);
+    }
+
+    public function test_overdue_tasks_returns_only_tasks_with_past_deadline()
+    {
+        $pastTasks = Task::factory()->count(3)->create([
+            'deadline' => now()->subDays(2),
+        ]);
+        //future tasks
+        Task::factory()->count(2)->create([
+            'deadline' => now()->addDays(2),
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->getJson(route('v1.tasks.overdue'));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(3, 'data');
+
+        $returnedIds = collect($response->json('data'))->pluck('id')->sort()->values()->toArray();
+        $expectedIds = $pastTasks->pluck('id')->sort()->values()->toArray();
+        $this->assertEquals($expectedIds, $returnedIds);
+    }
 }
