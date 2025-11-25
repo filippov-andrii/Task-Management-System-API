@@ -160,7 +160,7 @@ class TaskControllerTest extends TestCase
         $response->assertJsonValidationErrors('title');
     }
 
-    public function test_update_description_is_nullable()
+    public function test_update_description_is_not_nullable()
     {
         $task = Task::factory()->for($this->user, 'user')->create();
         $data = [
@@ -170,12 +170,8 @@ class TaskControllerTest extends TestCase
         ];
         $response = $this->actingAs($this->user, 'sanctum')->putJson(route('v1.tasks.update', $task->id), $data);
 
-        $response->assertStatus(200);
-        $this->assertDatabaseHas('tasks', [
-            'id' => $task->id,
-            'title' => $data['title'],
-            'description' => null,
-        ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('description');
     }
 
     public function test_store_requires_title()
@@ -213,7 +209,7 @@ class TaskControllerTest extends TestCase
         $response->assertJsonValidationErrors('title');
     }
 
-    public function test_store_description_is_nullable()
+    public function test_store_description_required()
     {
         $data = [
             'title' => 'Test Task',
@@ -223,11 +219,8 @@ class TaskControllerTest extends TestCase
         ];
         $response = $this->actingAs($this->user, 'sanctum')->postJson(route('v1.tasks.store'), $data);
 
-        $response->assertStatus(201);
-        $this->assertDatabaseHas('tasks', [
-            'title' => $data['title'],
-            'description' => null,
-        ]);
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('description');
     }
 
     public function test_store_requires_status()
@@ -415,6 +408,24 @@ class TaskControllerTest extends TestCase
         $response->assertJsonValidationErrors(['deadline']);
     }
 
+    public function test_store_fails_when_deadline_is_not_future_date()
+    {
+        $data = [
+            'title' => 'Task',
+            'description' => 'Invalid deadline',
+            'status' => 'open',
+            'user_id' => $this->user->id,
+            'project_id' => null,
+            'deadline' => now()->subDays(1)->toDateTimeString(),
+        ];
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson(route('v1.tasks.store'), $data);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['deadline']);
+    }
+
     public function test_update_fails_with_invalid_deadline()
     {
         $task = Task::factory()->for($this->user, 'user')->create();
@@ -422,6 +433,19 @@ class TaskControllerTest extends TestCase
         $response = $this->actingAs($this->user, 'sanctum')
             ->putJson(route('v1.tasks.update', $task->id), [
                 'deadline' => 'not-a-date'
+            ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['deadline']);
+    }
+
+    public function test_update_fails_with_not_future_date_deadline()
+    {
+        $task = Task::factory()->for($this->user, 'user')->create();
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->putJson(route('v1.tasks.update', $task->id), [
+                'deadline' => now()->subDays(1)->toDateTimeString(),
             ]);
 
         $response->assertStatus(422);
