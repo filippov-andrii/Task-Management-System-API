@@ -7,6 +7,8 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use App\Notifications\TaskDeadlinePassedNotification;
+use Illuminate\Support\Facades\Notification;
 
 class TaskControllerTest extends TestCase
 {
@@ -656,4 +658,20 @@ class TaskControllerTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    public function test_task_deadline_notification_is_sent()
+    {
+        $user = User::factory()->create();
+        $task = Task::factory()->create([
+            'user_id' => $user->id,
+            'deadline' => now()->subDays(1)
+        ]);
+
+        Notification::fake();
+        $task->update(['description' => 'Updated description']);
+        Notification::assertSentTo(
+            [$user], TaskDeadlinePassedNotification::class
+        );
+    }
+
 }

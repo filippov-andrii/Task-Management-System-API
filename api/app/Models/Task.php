@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Events\TaskUpdated;
 
 class Task extends Model
 {
@@ -20,6 +21,10 @@ class Task extends Model
 
     protected $casts = [
         'deadline' => 'datetime',
+    ];
+
+    protected $dispatchesEvents = [
+        'updated' => TaskUpdated::class,
     ];
 
     public function user()
