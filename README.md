@@ -63,3 +63,29 @@ Die Postman-Collection für diese API befindet sich im Projektverzeichnis. Um mi
    - Speichere den Token in der **Authorization**-Sektion der Collection:
       - Wähle „Bearer Token“ und füge den erhaltenen Token ein.
       - Der Token wird automatisch für alle weiteren Anfragen verwendet, die Authentifizierung benötigen.
+
+## Release: Erweiterte Prüfungsaufgabe - Hinzugefügte Funktionen
+
+In dieser Version wurden die folgenden erweiterten Funktionen hinzugefügt:
+
+### 1. Projekte
+- Es wurde die Möglichkeit hinzugefügt, Projekte zu verwalten und sie mit Aufgaben zu verknüpfen.
+
+### 2. Aufgaben mit Deadlines
+- In das Aufgabenmodell wurde ein Deadline-Feld eingefügt, und es ist nun möglich, überfällige Aufgaben zu überprüfen.
+
+### 3. Benachrichtigungen für überfällige Aufgaben
+- Benutzer erhalten Benachrichtigungen, wenn ihre Aufgabe überfällig ist, und zwar beim Aktualisieren der Aufgabe.
+
+### 4. Benutzerrollen
+- Alle Benutzer haben nur Zugriff auf ihre eigenen Aufgaben.
+- Administratoren können Aufgaben anderer Benutzer bearbeiten, wenn deren Deadline überschritten ist.
+- Normale Benutzer können nur ihre eigenen Aufgaben bearbeiten und nur, wenn diese nicht überfällig sind.
+
+### 5. Zusätzliche Methoden zur Erleichterung der Arbeit mit neuen Funktionen
+
+- `GET /api/v1/tasks/by-user/{userId}` - Aufgaben eines bestimmten Benutzers abrufen.
+- `GET /api/v1/tasks/by-project/{projectId}` - Aufgaben eines bestimmten Projekts abrufen.
+- `GET /api/v1/tasks/overdue` - Alle überfälligen Aufgaben abrufen.
+
+Weitere Details sind in der API-Dokumentation oder im Postman zu finden.
