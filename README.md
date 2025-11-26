@@ -10,10 +10,10 @@ Um das Projekt lokal auszuführen, benötigst du lediglich Docker, das zum Start
 ## Installation
 
 1. Klone das Repository auf deinen lokalen Rechner:
-    - `git clone https://github.com/??.git`
+    - `git@github.com:filippov-andrii/Task-Management-System-API.git`
 
 2. Gehe in das Projektverzeichnis:
-    - `cd aufgaben-management-api`
+    - `cd ./Task-Management-System-API`
 
 3. Starte Docker:
     - `./scripts/docker-start`
