@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+NETWORK_NAME=docker-andrii-test-smake
+CLI_CONTAINER=$(docker ps -f NAME=${NETWORK_NAME}-php-cli -q)
