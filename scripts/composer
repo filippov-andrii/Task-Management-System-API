@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+. "$(dirname $0)/include/base"
+
+docker exec -it $CLI_CONTAINER sh -c "gosu www-data:www-data php -d memory_limit=-1 /usr/bin/composer --working-dir=./api $*"

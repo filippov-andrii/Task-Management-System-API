@@ -1,0 +1,54 @@
+services:
+  mysql:
+    container_name: docker-andrii-test-smake-mysql
+    ports:
+      - "3306:3306"
+    image: mysql:8.0
+    env_file:
+      - ./docker-conf/mysql/env/.env
+    volumes:
+      - ./docker-conf/mysql/env:/etc/env:ro
+      - ./docker-conf/mysql/initdb.d/z_grant_all_hasts_to_user.sh:/docker-entrypoint-initdb.d/z_grant_all_hasts_to_user.sh
+      #- ./data-source:/var/lib/mysql
+
+  php-fpm:
+    container_name: docker-andrii-test-smake-php-fpm
+    build:
+      context: ./docker-conf/fpm
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql
+    links:
+      - mysql
+    ports:
+      - "9001"
+    volumes:
+      - ./:/var/www/docker-andrii-test-smake
+
+  php-cli:
+    container_name: docker-andrii-test-smake-php-cli
+    build:
+      context: ./docker-conf/cli
+      dockerfile: Dockerfile
+    tty: true
+    depends_on:
+      - mysql
+    links:
+      - mysql
+    volumes:
+      - ~/.ssh:/tmp/.ssh:ro
+      - ./:/var/www/docker-andrii-test-smake
+
+  nginx:
+    container_name: docker-andrii-test-smake-nginx
+    build:
+      context: ./docker-conf/nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - php-fpm
+    links:
+      - php-fpm
+    volumes:
+      - ./:/var/www/docker-andrii-test-smake
