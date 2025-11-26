@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+
+. "$(dirname $0)/include/variables"
+
+API_DIR="$(dirname $0)/../api"
+if [ ! -f "$API_DIR/.env" ]; then
+    cp "$API_DIR/.env.example" "$API_DIR/.env"
+    echo ".env copied from .env.example to "$API_DIR
+fi
+
+MYSQL_ENV_DIR="$(dirname $0)/../docker-conf/mysql/env"
+if [ ! -f "$MYSQL_ENV_DIR/.env" ]; then
+    cp "$MYSQL_ENV_DIR/.env.example" "$MYSQL_ENV_DIR/.env"
+    echo ".env copied from .env.example to "$MYSQL_ENV_DIR
+fi
+
+$(dirname $0)/docker-stop && \
+    cd $(dirname $0)/../ \
+    && docker compose -p docker-andrii-test-smake up -d --build; \
+    cd ->/dev/null

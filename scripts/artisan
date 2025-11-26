@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+. "$(dirname $0)/include/base"
+
+docker exec -it $CLI_CONTAINER sh -c "cd ./api && gosu www-data:www-data php artisan $*"

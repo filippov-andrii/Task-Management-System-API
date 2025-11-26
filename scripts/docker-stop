@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+. "$(dirname $0)/include/variables"
+
+cd $(dirname $0)/../ \
+    && docker compose -p docker-andrii-test-smake kill > /dev/null
+

@@ -1,0 +1,8 @@
+
+source '/etc/env/.env'
+
+mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "GRANT SELECT,INSERT,UPDATE,DELETE ON $MYSQL_DATABASE.* TO '$MYSQL_USER'"
+
+mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "FLUSH PRIVILEGES;"
+
+echo "MYSQL_USERES_ADDED"
